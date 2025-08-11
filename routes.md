@@ -21,17 +21,21 @@
 ### Routes
 
 - **GET** `/categories` -> `categoryController.showCategories`
+- **GET** `/categories/:id` -> `categoryController.showCategoryDetails`
 - **GET** `/categories/:id/items` -> `categoryController.showCategoryItems`
 
 ### Views
 
 - **GET** `/categories` -> `categories.ejs`
+- **GET** `/categories/:id` -> `categories-details.ejs`
 - **GET** `/categories/:id/items` -> `category-items.ejs`
 
 ### Controllers
 
 - **GET** `/categories` -> `showCategories()` -> `render("categories.ejs")`
+- **GET** `/categories/:id` ->  `showCategoryDetails()` -> render("categories-details.ejs")
 - **GET** `/categories/:id/items` -> `showCategoryItems()` -> `render("category-items.ejs")`
+
 
 ## Update
 

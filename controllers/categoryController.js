@@ -40,6 +40,20 @@ exports.showCategories = async (req, res) => {
   }
 };
 
+exports.showCategoryDetails = async (req, res) => {
+  const { id } = req.params;
+  const category = await db.getCategoryById(id);
+  if (!category) return res.status(404).send("Category not found");
+  res.render("categories-details.ejs", { category });
+};
+exports.showCategoryDetails = async (req, res) => {
+  const { id } = req.params;
+  const category = await db.getCategoryById(id);
+  if (!category) return res.status(404).send("Category not found");
+  res.render("categories-details.ejs", { category });
+};
+
+
 exports.showCategoryItems = async (req, res) => {
   try {
     const { id } = req.params;
