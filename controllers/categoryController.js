@@ -1,5 +1,4 @@
-// controllers/categoryController.js
-const db = require("../db/queries");
+const db = require("../db/categoryModel");
 
 // CREATE
 exports.showCreateForm = (req, res) => {
@@ -9,17 +8,12 @@ exports.showCreateForm = (req, res) => {
 exports.createCategory = async (req, res) => {
   try {
     const { category } = req.body;
-    const err = await db.createCategory(category);
+    const newCategoryId = await db.createCategory(category);
 
-    if (err) {
-      console.error(`Category "${category}" not created. Error: ${err}`);
-      return res.status(500).send("Failed to create category");
-    }
-
-    res.redirect("/categories");
+    res.redirect(`/categories/${newCategoryId}`);
   } catch (error) {
-    console.error(`Unexpected error creating category: ${error}`);
-    res.status(500).send("Server error");
+    console.error(`Error creating category: ${error.message}`);
+    res.status(500).send("Failed to create category");
   }
 };
 
@@ -27,47 +21,38 @@ exports.createCategory = async (req, res) => {
 exports.showCategories = async (req, res) => {
   try {
     const categories = await db.getAllCategories();
-
-    if (!categories) {
-      console.error("Categories could not be fetched");
-      return res.status(500).send("Failed to fetch categories");
-    }
-
     res.render("categories.ejs", { categories });
   } catch (error) {
-    console.error(`Unexpected error fetching categories: ${error}`);
-    res.status(500).send("Server error");
+    console.error(`Error fetching categories: ${error.message}`);
+    res.status(500).send("Failed to fetch categories");
   }
 };
 
 exports.showCategoryDetails = async (req, res) => {
-  const { id } = req.params;
-  const category = await db.getCategoryById(id);
-  if (!category) return res.status(404).send("Category not found");
-  res.render("categories-details.ejs", { category });
-};
-exports.showCategoryDetails = async (req, res) => {
-  const { id } = req.params;
-  const category = await db.getCategoryById(id);
-  if (!category) return res.status(404).send("Category not found");
-  res.render("categories-details.ejs", { category });
-};
+  try {
+    const { id } = req.params;
+    const category = await db.getCategoryById(id);
+    if (!category) return res.status(404).send("Category not found");
 
+    res.render("categories-details.ejs", { category });
+  } catch (error) {
+    console.error(`Error fetching category details: ${error.message}`);
+    res.status(500).send("Failed to fetch category details");
+  }
+};
 
 exports.showCategoryItems = async (req, res) => {
   try {
     const { id } = req.params;
+    const category = await db.getCategoryById(id);
     const categoryItems = await db.getCategoryItems(id);
 
-    if (!categoryItems) {
-      console.error(`Items for category ${id} could not be fetched`);
-      return res.status(404).send("Category items not found");
-    }
+    if (!category) return res.status(404).send("Category not found");
 
-    res.render("category-items.ejs", { categoryItems });
+    res.render("category-items.ejs", { category, categoryItems });
   } catch (error) {
-    console.error(`Unexpected error fetching category items: ${error}`);
-    res.status(500).send("Server error");
+    console.error(`Error fetching category items: ${error.message}`);
+    res.status(500).send("Failed to fetch category items");
   }
 };
 
@@ -76,34 +61,25 @@ exports.showEditForm = async (req, res) => {
   try {
     const { id } = req.params;
     const category = await db.getCategoryById(id);
-
-    if (!category) {
-      return res.status(404).send("Category not found");
-    }
+    if (!category) return res.status(404).send("Category not found");
 
     res.render("category-edit.ejs", { category });
   } catch (error) {
-    console.error(`Unexpected error fetching category for edit: ${error}`);
-    res.status(500).send("Server error");
+    console.error(`Error fetching category for edit: ${error.message}`);
+    res.status(500).send("Failed to fetch category for edit");
   }
 };
 
 exports.updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { newCategory } = req.body;
+    const { name } = req.body;
 
-    const err = await db.updateCategory(id, newCategory);
-
-    if (err) {
-      console.error(`Category ${id} could not be updated to "${newCategory}". Error: ${err}`);
-      return res.status(500).send("Failed to update category");
-    }
-
-    res.redirect("/categories");
+    await db.updateCategory(id, name);
+    res.redirect(`/categories/${id}`);
   } catch (error) {
-    console.error(`Unexpected error updating category: ${error}`);
-    res.status(500).send("Server error");
+    console.error(`Error updating category: ${error.message}`);
+    res.status(500).send("Failed to update category");
   }
 };
 
@@ -111,17 +87,12 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const err = await db.deleteCategory(id);
-
-    if (err) {
-      console.error(`Unable to delete category ${id}: ${err}`);
-      return res.status(500).send("Failed to delete category");
-    }
+    await db.deleteCategory(id);
 
     res.redirect("/categories");
   } catch (error) {
-    console.error(`Unexpected error deleting category: ${error}`);
-    res.status(500).send("Server error");
+    console.error(`Error deleting category: ${error.message}`);
+    res.status(500).send("Failed to delete category");
   }
 };
 
